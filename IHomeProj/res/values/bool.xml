@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <bool name="app_debug">true</bool>
+    <bool name="app_catch_info">true</bool>
+    <bool name="act_debug">true</bool>
+    <bool name="ser_debug">true</bool>
+
+</resources>
