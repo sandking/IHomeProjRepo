@@ -7,7 +7,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.ihome.serv.LoginManager.LoginCallback;
-import com.ihome.serv.LoginManager.LoginInfor;
 import com.ihome.serv.LoginManager.LoginResult;
 import com.tpad.ihome.inter.RZCallStateListener;
 import com.tpad.ihome.inter.RZEventCallback;
@@ -23,6 +22,10 @@ public class RemoteServ extends IService implements RZCallStateListener,
 		RZInitCompleteListener, RZMemberChangedListener, RZEventCallback,
 		LoginCallback {
 
+	static {
+		System.loadLibrary("razem");
+	}
+ 
 	private RemoteServManager mServManager;
 	private LoginManager mLoginManager;
 
@@ -81,10 +84,17 @@ public class RemoteServ extends IService implements RZCallStateListener,
 	}
 
 	@Override
-	public void onLoginSuccess() {
+	public void onLoginSuccess(LoginInfor infor) {
 
 		// notify
-		sendBroadcast(RazemIntent.ACTION_LOGIN_SUCCESS, new Bundle());
+		Bundle bundle = new Bundle();
+
+		bundle.putInt(RazemIntent.BUNDLE_LOGIN_TAG_RESULT,
+				LoginResult._RAZEM_LOGIN_RESULT_SUCCESS.ordinal());
+
+		bundle.putParcelable(RazemIntent.BUNDLE_LOGIN_TAG_INFOR, infor);
+
+		sendBroadcast(RazemIntent.ACTION_LOGIN_STATE_CHANGED, bundle);
 	}
 
 	@Override
@@ -95,7 +105,7 @@ public class RemoteServ extends IService implements RZCallStateListener,
 
 		bundle.putInt(RazemIntent.BUNDLE_LOGIN_TAG_RESULT, login_ret);
 
-		sendBroadcast(RazemIntent.ACTION_LOGIN_SUCCESS, bundle);
+		sendBroadcast(RazemIntent.ACTION_LOGIN_STATE_CHANGED, bundle);
 
 		switch (LoginResult.values()[login_ret]) {
 		case _RAZEM_LOGIN_RESULT_ACCOUNT_BLOCKED:
@@ -133,7 +143,7 @@ public class RemoteServ extends IService implements RZCallStateListener,
 	@Override
 	public void onMemberOnlineStateChanged(int account_id, int online_offline) {
 
-	}
+	}   
 
 	@Override
 	public void onMemberChanged(int account_id, int changed_bits) {
@@ -194,9 +204,18 @@ public class RemoteServ extends IService implements RZCallStateListener,
 
 		@Override
 		public int rzGetLoginState() throws RemoteException {
-
-			return super.rzGetLoginState();
+			return mLoginManager.getLoginState();
 		}
 
+		@Override
+		public LoginInfor rzGetLoginInfor() throws RemoteException {
+			return mLoginManager.getLoginInfor();
+		}
+
+		@Override
+		public void rzLogout() throws RemoteException {
+			super.rzLogout();
+			mLoginManager.logout();
+		}
 	}
 }

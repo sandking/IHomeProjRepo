@@ -1,13 +1,13 @@
 package com.ihome.serv;
 
-import com.tpad.ihome.inter.SVConnect;
-
 import android.net.NetworkInfo;
-import android.os.Handler.Callback;
 import android.os.Handler;
+import android.os.Handler.Callback;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
+
+import com.tpad.ihome.inter.SVConnect;
 
 public class LoginManager implements Callback {
 
@@ -21,8 +21,8 @@ public class LoginManager implements Callback {
 	private RequestLoginThread mRequestLoginThread;
 	private Handler mRequestLoginHandler;
 
-	private LoginState state_login; // µ±Ç°µÇÂ¼×´Ì¬
-	private LoginInfor retry_account; // ÖØÁ¬ÕËºÅ
+	private LoginState state_login; // ï¿½ï¿½Ç°ï¿½ï¿½Â¼×´Ì¬
+	private LoginInfor retry_account; // ï¿½ï¿½ï¿½ï¿½ï¿½Ëºï¿½
 	private boolean is_net_ok;
 
 	private final LoginCallback mLoginCallback;
@@ -35,9 +35,10 @@ public class LoginManager implements Callback {
 
 	private void handleLoginSuccess(LoginInfor infor) {
 		state_login = LoginState.ONLINE;
-		retry_account = new LoginInfor(infor.ip, infor.account, infor.pwd);
+		// retry_account = new LoginInfor(infor.ip, infor.account, infor.pwd);
+		retry_account = infor;
 
-		mLoginCallback.onLoginSuccess();
+		mLoginCallback.onLoginSuccess(infor);
 	}
 
 	private void handleLoginFailed(LoginInfor infor, int ret) {
@@ -89,14 +90,28 @@ public class LoginManager implements Callback {
 				return;
 
 			if (is_net_ok)
-				request_retry();
+				request_retry(); 
 			else
 				retry_account.retrys = 0;
 		}
 	}
 
-	public void shutdown() {
+	public void logout() {
+		state_login = LoginState.OFFLINE;
 		retry_account = null;
+	}
+
+	public void shutdown() {
+		state_login = LoginState.OFFLINE;
+		retry_account = null;
+	}
+
+	public LoginInfor getLoginInfor() {
+		return retry_account;
+	}
+
+	public int getLoginState() {
+		return state_login.ordinal();
 	}
 
 	public void exec() {
@@ -149,40 +164,15 @@ public class LoginManager implements Callback {
 		return true;
 	}
 
-	public final static class LoginInfor {
-
-		private final static int DELAY_BASE = 3000;
-		private final static int DELAY_INCREASE = 5000;
-
-		public final String ip;
-		public final int account;
-		public final String pwd;
-		public int retrys;
-
-		public LoginInfor(String ip, int account, String pwd) {
-			this.ip = ip;
-			this.account = account;
-			this.pwd = pwd;
-			this.retrys = -1;
-		}
-
-		public int getDelayRetry() {
-			if (retrys == 0)
-				return 0;
-
-			return DELAY_BASE + retrys * DELAY_INCREASE;
-		}
-	}
-
 	public enum LoginResult {
-		_RAZEM_LOGIN_RESULT_SUCCESS("µÇÂ¼³É¹¦!"), //
-		_RAZEM_LOGIN_RESULT_SOCKET_ERROR("ÍøÂçÁ¬½Ó´íÎó"), //
-		_RAZEM_LOGIN_RESULT_SERVER_NOT_ONLINE("ÍøÂçÁ¬½Ó´íÎó"), //
-		_RAZEM_LOGIN_RESULT_SOCKET_COMM_FAIL("ÍøÂçÁ¬½Ó´íÎó"), //
-		_RAZEM_LOGIN_RESULT_GIVEUP("ÍøÂçÁ¬½Ó´íÎó"), //
-		_RAZEM_LOGIN_RESULT_ACCOUNT_INVALID("ÕËºÅ»òÕßÃÜÂëÎŞĞ§"), //
-		_RAZEM_LOGIN_RESULT_KICKED_OUT("ÕËºÅ±»ÌŞ³ı"), //
-		_RAZEM_LOGIN_RESULT_ACCOUNT_BLOCKED("ÕËºÅ±»½ûÓÃ");
+		_RAZEM_LOGIN_RESULT_SUCCESS("ç™»å½•æˆåŠŸ!"), //
+		_RAZEM_LOGIN_RESULT_SOCKET_ERROR("ç½‘ç»œè¿æ¥é”™è¯¯"), //
+		_RAZEM_LOGIN_RESULT_SERVER_NOT_ONLINE("ç½‘ç»œè¿æ¥é”™è¯¯"), //
+		_RAZEM_LOGIN_RESULT_SOCKET_COMM_FAIL("ç½‘ç»œè¿æ¥é”™è¯¯"), //
+		_RAZEM_LOGIN_RESULT_GIVEUP("ç½‘ç»œè¿æ¥é”™è¯¯"), //
+		_RAZEM_LOGIN_RESULT_ACCOUNT_INVALID("è´¦å·æˆ–è€…å¯†ç æ— æ•ˆ"), //
+		_RAZEM_LOGIN_RESULT_KICKED_OUT("è´¦å·å·²ç»ç™»å½•"), //
+		_RAZEM_LOGIN_RESULT_ACCOUNT_BLOCKED("è´¦å·è¢«ç¦ç”¨");
 
 		private final String desc;
 
@@ -196,12 +186,12 @@ public class LoginManager implements Callback {
 	}
 
 	public static interface LoginCallback {
-		void onLoginSuccess();
+		void onLoginSuccess(LoginInfor infor);
 
 		boolean onLoginFailed(int login_ret);
 	}
 
-	private enum LoginState {
+	public enum LoginState {
 		OFFLINE, ONLINE, TRYING;
 	}
 

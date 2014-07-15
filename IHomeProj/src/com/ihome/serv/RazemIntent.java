@@ -8,9 +8,8 @@ public class RazemIntent {
 	public final static String ACTION_CALL_INCOMMING = "com.ihome.action.CALL_INCOMMING";
 
 	// ACTION_FLAG : LOGIN_STATE
-	public final static String ACTION_LOGIN_SUCCESS = "com.ihome.action.LOGIN_SUCCESS";
-	public final static String ACTION_LOGIN_FAILED = "com.ihome.action.LOGIN_FAILED";
-
+	public final static String ACTION_LOGIN_STATE_CHANGED = "com.ihome.action.LOGIN_STATE_CHANGED";
+	
 	// BUNDLE_FLAG : CALL_SUCCESS
 	public final static String BUNDLE_CALL_SUCCESS_TAG_IP = "bundle_call_success_ip";
 	public final static String BUNDLE_CALL_SUCCESS_TAG_PORT = "bundle_call_success_port";
@@ -26,4 +25,5 @@ public class RazemIntent {
 
 	// BUNDLE_FLAG : LOGIN_RET
 	public final static String BUNDLE_LOGIN_TAG_RESULT = "bundle_login_result";
+	public final static String BUNDLE_LOGIN_TAG_INFOR = "bundle_login_infor";
 }

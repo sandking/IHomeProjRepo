@@ -99,7 +99,7 @@ public class CrashHandler implements UncaughtExceptionHandler, TransportListener
 	 * @return if true - had handle the error.
 	 */
 	private boolean handleException(Throwable ex)
-	{
+	{ 
 		if (ex == null)
 			return true;
 
@@ -109,7 +109,7 @@ public class CrashHandler implements UncaughtExceptionHandler, TransportListener
 			saveCrashInfoToFile(ex);
 			sendCrashReportsToServer();
 		}
-		return true;
+		return false;
 	}
 
 	private void sendCrashReportsToServer()

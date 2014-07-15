@@ -11,17 +11,14 @@ import com.ihome.app.IHomeApp;
 /**
  * Created by sk on 14-6-27.
  */
-public class BaseActivity extends Activity
-{
+public class BaseActivity extends Activity {
 	private IHomeApp ihomeApp;
 
-	
-	
 	private boolean _dbg_;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState)
-	{
+	protected void onCreate(Bundle savedInstanceState) { 
+		printf("%s onCreate!!!", getClass().getSimpleName());
 		super.onCreate(savedInstanceState);
 
 		ihomeApp = (IHomeApp) getApplication();
@@ -31,21 +28,20 @@ public class BaseActivity extends Activity
 	}
 
 	@Override
-	protected void onDestroy()
-	{
+	protected void onDestroy() {
+		printf("%s onDestroy!!!", getClass().getSimpleName());
+
 		super.onDestroy();
-		
+
 		ihomeApp.exit(this.getClass().getName());
 	}
 
-	protected void printf(String msg, Object... args)
-	{
+	protected void printf(String msg, Object... args) {
 		if (_dbg_)
 			Log.e(getClass().getSimpleName(), String.format(msg, args));
 	}
 
-	public void forceClose(boolean force)
-	{
+	public void forceClose(boolean force) {
 		printf("force close ");
 
 		finish();

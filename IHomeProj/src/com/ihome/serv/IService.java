@@ -34,7 +34,9 @@ public abstract class IService extends Service {
 		super.onCreate();
 
 		_dbg_ = getResources().getBoolean(R.bool.ser_debug);
-
+		
+		mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+    
 		foreground();
 		register_netlistener();
 	}
@@ -99,6 +101,11 @@ public abstract class IService extends Service {
 		@Override
 		public int rzGetLoginState() throws RemoteException {
 			return 0;
+		}
+
+		@Override
+		public LoginInfor rzGetLoginInfor() throws RemoteException {
+			return null;
 		}
 
 		@Override

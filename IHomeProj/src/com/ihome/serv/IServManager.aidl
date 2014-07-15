@@ -1,12 +1,16 @@
 package com.ihome.serv;
 
+import com.ihome.serv.LoginInfor;
+
 interface IServManager 
 {
 	void rzLogin(String addr, int account, String passwd);
 	
 	int rzGetLoginState();
-	 
-	void rzLogout();
+	
+	LoginInfor rzGetLoginInfor();
+	
+	void rzLogout(); 
 	
 //	void rzSetILoginCallback(ILoginCallback callback);
 	

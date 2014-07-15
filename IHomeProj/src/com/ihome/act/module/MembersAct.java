@@ -1,5 +1,8 @@
 package com.ihome.act.module;
 
+import android.os.Bundle;
+
+import com.ihome.R;
 import com.ihome.act.BaseActivity;
 
 /**
@@ -7,5 +10,12 @@ import com.ihome.act.BaseActivity;
  */
 public class MembersAct extends BaseActivity
 {
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+   
+		setContentView(R.layout.act_request);
+	}
 	
 }

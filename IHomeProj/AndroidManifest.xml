@@ -6,15 +6,38 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="10" />
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+ 
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
 
     <application
+        android:name="com.ihome.app.IHomeApp"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
+
+        <!-- _______________  Service  ______________ -->
+
+        <service
+            android:name="com.ihome.serv.RemoteServ"
+            android:process="com.ihome.RemoteService" />
+
+        <!-- _______________  Activity  ______________ -->
+
         <activity
-            android:name="com.ihome.MainActivity"
+            android:name="com.ihome.act.module.WelcomeAct"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,6 +45,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.ihome.act.module.LoginAct" />
+        <activity android:name="com.ihome.act.module.CommunityAct" />
+        <activity android:name="com.ihome.act.module.InCommingAct" />
+        <activity android:name="com.ihome.act.module.MembersAct" />
     </application>
 
 </manifest>
