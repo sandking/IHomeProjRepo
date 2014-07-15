@@ -71,6 +71,7 @@ public class RenderView extends SurfaceView implements Callback {
 	}
 
 	private void render_view(Canvas canvas, Bitmap bmp, Rect render_rect) {
+
 		canvas.setDrawFilter(new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG
 				| Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG));
 

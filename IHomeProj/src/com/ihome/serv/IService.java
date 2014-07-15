@@ -8,10 +8,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.ihome.R;
+import com.tpad.ihome.inter.SVConnect;
 
 /**
  * Created by sk on 14-7-2.
@@ -25,9 +27,12 @@ public abstract class IService extends Service {
 	private NetStateChangedListener net_changed_listener;
 	private ConnectivityManager mConnectivityManager;
 
+	protected abstract void onNetChanged(NetworkInfo netWorkInfor);
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
+
 		_dbg_ = getResources().getBoolean(R.bool.ser_debug);
 
 		foreground();
@@ -65,10 +70,6 @@ public abstract class IService extends Service {
 		}
 	}
 
-	protected abstract boolean onNetConnected(NetworkInfo infor);
-
-	protected abstract boolean onNetDisconnected();
-
 	protected void printf(String msg, Object... args) {
 		if (_dbg_)
 			Log.e(getClass().getSimpleName(), String.format(msg, args));
@@ -83,11 +84,58 @@ public abstract class IService extends Service {
 				NetworkInfo network_infor = mConnectivityManager
 						.getActiveNetworkInfo();
 
-				if (network_infor == null ? onNetDisconnected()
-						: onNetConnected(network_infor))
-					return;
+				onNetChanged(network_infor);
 			}
 		}
 	}
 
+	protected class ServManager extends IServManager.Stub {
+
+		@Override
+		public void rzLogin(String addr, int account, String passwd)
+				throws RemoteException {
+		}
+
+		@Override
+		public int rzGetLoginState() throws RemoteException {
+			return 0;
+		}
+
+		@Override
+		public void rzLogout() throws RemoteException {
+			SVConnect.logout();
+		}
+
+		@Override
+		public void rzSetInfor(int set_bits, String id, String title,
+				int call_status, byte[] icon_buf) throws RemoteException {
+			SVConnect.setInfomation(set_bits, id, title, call_status, icon_buf);
+		}
+
+		@Override
+		public void rzGetMemberList() throws RemoteException {
+			SVConnect.getMemberList();
+		}
+
+		@Override
+		public void rzGetMemberInfo(int account, int update_bits)
+				throws RemoteException {
+			SVConnect.getMemberInfo(account, update_bits);
+		}
+
+		@Override
+		public void rzCall(int targetid) throws RemoteException {
+			SVConnect.call(targetid);
+		}
+
+		@Override
+		public void rzAnswer() throws RemoteException {
+			SVConnect.answer();
+		}
+
+		@Override
+		public void rzReject() throws RemoteException {
+			SVConnect.reject();
+		}
+	}
 }

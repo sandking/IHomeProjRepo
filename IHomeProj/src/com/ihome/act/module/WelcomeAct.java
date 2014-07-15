@@ -18,6 +18,4 @@ public class WelcomeAct extends BaseActivity
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.act_welcome);
 	}
-	
-	
 }

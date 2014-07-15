@@ -9,8 +9,8 @@ import com.ihome.act.BaseActivity;
 /**
  * Created by sk on 14-7-2.
  */
-public class CommunityAct extends BaseActivity {
-
+public class CommunityAct extends BaseActivity 
+{
 	final static int FLAG_KEEP_NO_KEYGUARD = WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
 			| WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
 
@@ -24,9 +24,5 @@ public class CommunityAct extends BaseActivity {
 		final Window win = getWindow();
 		win.addFlags(FLAG_KEEP_NO_KEYGUARD);
 		win.addFlags(FLAG_KEEP_SCREEN_ON);
-
-		
-		
 	}
-
 }

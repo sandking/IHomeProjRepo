@@ -3,6 +3,8 @@ package com.ihome.act;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+
 import com.ihome.R;
 import com.ihome.app.IHomeApp;
 
@@ -13,13 +15,15 @@ public class BaseActivity extends Activity
 {
 	private IHomeApp ihomeApp;
 
+	
+	
 	private boolean _dbg_;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		
+
 		ihomeApp = (IHomeApp) getApplication();
 		ihomeApp.join(this.getClass().getName(), this);
 
@@ -30,6 +34,7 @@ public class BaseActivity extends Activity
 	protected void onDestroy()
 	{
 		super.onDestroy();
+		
 		ihomeApp.exit(this.getClass().getName());
 	}
 
