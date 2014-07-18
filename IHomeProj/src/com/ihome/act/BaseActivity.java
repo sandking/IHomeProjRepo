@@ -3,7 +3,6 @@ package com.ihome.act;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import com.ihome.R;
 import com.ihome.app.IHomeApp;
@@ -17,23 +16,19 @@ public class BaseActivity extends Activity {
 	private boolean _dbg_;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) { 
-		printf("%s onCreate!!!", getClass().getSimpleName());
-		super.onCreate(savedInstanceState);
-
-		ihomeApp = (IHomeApp) getApplication();
-		ihomeApp.join(this.getClass().getName(), this);
-
+	protected void onCreate(Bundle savedInstanceState) {
 		_dbg_ = getResources().getBoolean(R.bool.act_debug);
+		printf("%s onCreate!!!", getClass().getSimpleName()); 
+		super.onCreate(savedInstanceState);
+		ihomeApp = (IHomeApp) getApplication();
+		ihomeApp.join(this.getClass().getSimpleName(), this);
 	}
 
 	@Override
 	protected void onDestroy() {
 		printf("%s onDestroy!!!", getClass().getSimpleName());
-
 		super.onDestroy();
-
-		ihomeApp.exit(this.getClass().getName());
+		ihomeApp.exit(this.getClass().getSimpleName());
 	}
 
 	protected void printf(String msg, Object... args) {

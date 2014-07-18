@@ -4,5 +4,6 @@ public interface VPConnectListener
 {
 	void onConnected();
 	
-	void onDisconnected();
+	void onDisconnected(); 
 }   
+  

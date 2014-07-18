@@ -1,30 +1,45 @@
 package com.ihome.act;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 import android.widget.Toast;
 
+import com.ihome.serv.IServManager;
 import com.ihome.serv.LoginInfor;
+import com.ihome.serv.MemberInfor;
 import com.ihome.serv.RazemIntent;
 import com.ihome.serv.RemoteServ;
-import com.ihome.serv.LoginManager.LoginResult;
 
 public abstract class RemoteActivity extends BaseActivity implements
 		ServiceConnection {
 
 	public final static String BUNDLE_LOGIN_INFOR_ACCOUNT = "bundle_account";
+	public final static String BUNDLE_TYPE_GOTO_COMMUNITY = "bundle_type";
+
+	public final static int TYPE_INCOMMING = 0;
+	public final static int TYPE_CALLOUT = 1;
 
 	private BroadcastReceiver mReceiver;
+	
+	public final static boolean TEST_CALL_OUT = true;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		bind();
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
 	}
 
 	@Override
@@ -67,6 +82,25 @@ public abstract class RemoteActivity extends BaseActivity implements
 		mReceiver = null;
 	}
 
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		try {
+			// printf("onServiceConnected!!!!!!!!!");
+			Log.e("RemoteServ", getClass().getSimpleName()
+					+ "  : onServiceConnected!!!");
+			onBindPrepared(IServManager.Stub.asInterface(service));
+		} catch (RemoteException e) {
+			handleRemoteException(e);
+		}
+	}
+
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+	}
+
+	protected abstract void onBindPrepared(IServManager serv)
+			throws RemoteException;
+
 	protected void handleRemoteException(RemoteException e) {
 		e.printStackTrace();
 		runOnUiThread(new Runnable() {
@@ -79,7 +113,7 @@ public abstract class RemoteActivity extends BaseActivity implements
 		});
 	}
 
-	protected void onLoginRet(LoginInfor infor, LoginResult ret) {
+	protected void onLoginRet(LoginInfor infor) {
 
 	}
 
@@ -92,6 +126,12 @@ public abstract class RemoteActivity extends BaseActivity implements
 
 	}
 
+	protected void onMemberAcquired(MemberInfor infor) {
+	}
+
+	protected void onMemberOnlineStateChanged(int account, int online_state) {
+	}
+
 	private final class Receiver extends BroadcastReceiver {
 
 		@Override
@@ -101,15 +141,10 @@ public abstract class RemoteActivity extends BaseActivity implements
 			final Bundle extra = arg1.getExtras();
 
 			if (action.equals(RazemIntent.ACTION_LOGIN_STATE_CHANGED)) {
-				final int login_ret = extra
-						.getInt(RazemIntent.BUNDLE_LOGIN_TAG_RESULT);
 
-				final LoginResult result = LoginResult.values()[login_ret];
-				LoginInfor infor = null;
-				if (result == LoginResult._RAZEM_LOGIN_RESULT_SUCCESS)
-					infor = extra
-							.getParcelable(RazemIntent.BUNDLE_LOGIN_TAG_INFOR);
-				onLoginRet(infor, result);
+				LoginInfor infor = extra
+						.getParcelable(RazemIntent.BUNDLE_LOGIN_TAG_INFOR);
+				onLoginRet(infor);
 
 			} else if (action.equals(RazemIntent.ACTION_CALL_INCOMMING)) {
 
@@ -133,6 +168,19 @@ public abstract class RemoteActivity extends BaseActivity implements
 						.getInt(RazemIntent.BUNDLE_CALL_FAILED_TAG_STATE);
 
 				onCallFailed(state);
+			} else if (action.equals(RazemIntent.ACTION_MEMBER_ACQUIRE)) {
+
+				final MemberInfor infor = extra
+						.getParcelable(RazemIntent.BUNDLE_MEMBER_INFOR);
+
+				onMemberAcquired(infor);
+			} else if (action.equals(RazemIntent.ACTION_MEMBER_STATE_CHANGED)) {
+				final int account = extra
+						.getInt(RazemIntent.BUNDLE_MEMBER_ONLINE_ACCOUNT);
+				final int online_state = extra
+						.getInt(RazemIntent.BUNDLE_MEMBER_ONLINE_STATE);
+
+				onMemberOnlineStateChanged(account, online_state);
 			}
 		}
 	}

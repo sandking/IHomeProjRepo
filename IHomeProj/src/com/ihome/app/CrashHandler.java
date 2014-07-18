@@ -102,14 +102,14 @@ public class CrashHandler implements UncaughtExceptionHandler, TransportListener
 	{ 
 		if (ex == null)
 			return true;
-
+ 
 		if (mCrashListener.onCatch(ex))
 		{
 			collectCrashDeviceInfo(mContext);
 			saveCrashInfoToFile(ex);
 			sendCrashReportsToServer();
 		}
-		return false;
+		return true;
 	}
 
 	private void sendCrashReportsToServer()
@@ -123,7 +123,7 @@ public class CrashHandler implements UncaughtExceptionHandler, TransportListener
 	}
 
 	private void postReport(final File[] files)
-	{
+	{  
 		new Thread(new Runnable()
 		{
 			@Override

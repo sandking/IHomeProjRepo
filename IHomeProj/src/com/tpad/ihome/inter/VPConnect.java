@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 public class VPConnect
 {
 	public native static void init(VPInitCompleteListener l, Bitmap bmp, int camera_w, int camera_h, int account_id);
-
+  
 	public native static void deInit(VPDeInitCompleteListener l);
 
 	public native static void call(String ip, int port, String key, int link_dir, int udp_socket);

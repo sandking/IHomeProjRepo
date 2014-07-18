@@ -26,7 +26,7 @@ public abstract class IService extends Service {
 
 	private NetStateChangedListener net_changed_listener;
 	private ConnectivityManager mConnectivityManager;
-
+ 
 	protected abstract void onNetChanged(NetworkInfo netWorkInfor);
 
 	@Override
@@ -75,7 +75,7 @@ public abstract class IService extends Service {
 	protected void printf(String msg, Object... args) {
 		if (_dbg_)
 			Log.e(getClass().getSimpleName(), String.format(msg, args));
-	}
+	}  
 
 	private final class NetStateChangedListener extends BroadcastReceiver {
 		@Override

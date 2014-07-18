@@ -12,7 +12,7 @@ public final class LoginInfor implements Parcelable {
 	public final int account;
 	public final String pwd;
 	public int retrys;
-
+ 
 	public LoginInfor(String ip, int account, String pwd) {
 		this.ip = ip;
 		this.account = account;
@@ -42,10 +42,10 @@ public final class LoginInfor implements Parcelable {
 
 	@Override
 	public String toString() {
-		return String.format("infor - { %s - %d - %s - %d}", ip, account, pwd,
+		return String.format("infor - { %s , %d , %s , %d }", ip, account, pwd,
 				retrys);
 	}
-
+ 
 	public static final Parcelable.Creator<LoginInfor> CREATOR = new Parcelable.Creator<LoginInfor>() {
 
 		@Override

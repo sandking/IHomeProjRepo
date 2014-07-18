@@ -17,7 +17,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
- 
+
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
@@ -38,17 +38,27 @@
 
         <activity
             android:name="com.ihome.act.module.WelcomeAct"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.ihome.act.module.LoginAct" />
-        <activity android:name="com.ihome.act.module.CommunityAct" />
-        <activity android:name="com.ihome.act.module.InCommingAct" />
-        <activity android:name="com.ihome.act.module.MembersAct" />
+        <activity
+            android:name="com.ihome.act.module.LoginAct"
+            android:screenOrientation="portrait" />
+        <activity 
+            android:name="com.ihome.act.module.CommunityAct"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.ihome.act.module.InCommingAct"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="com.ihome.act.module.MembersAct"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

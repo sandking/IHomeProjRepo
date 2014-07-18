@@ -1,11 +1,13 @@
 package com.ihome.serv;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import com.ihome.act.module.InCommingAct;
 import com.ihome.serv.LoginManager.LoginCallback;
 import com.ihome.serv.LoginManager.LoginResult;
 import com.tpad.ihome.inter.RZCallStateListener;
@@ -25,7 +27,7 @@ public class RemoteServ extends IService implements RZCallStateListener,
 	static {
 		System.loadLibrary("razem");
 	}
- 
+
 	private RemoteServManager mServManager;
 	private LoginManager mLoginManager;
 
@@ -48,19 +50,35 @@ public class RemoteServ extends IService implements RZCallStateListener,
 		new Thread(init_runn, "SVConnect-Thread").start();
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public IBinder onBind(Intent intent) {
+
+		final String act_name = intent.getExtras().getString("act-name",
+				"default");
+
+		printf("onBind - %s", act_name);
+
 		return mServManager;
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public boolean onUnbind(Intent intent) {
+		final String act_name = intent.getExtras().getString("act-name",
+				"default");
+		printf("onUnbind - %s", act_name);
 		return true;
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public void onRebind(Intent intent) {
 		super.onRebind(intent);
+		final String act_name = intent.getExtras().getString("act-name",
+				"default");
+
+		printf("onRebind - %s", act_name);
 	}
 
 	@Override
@@ -89,9 +107,6 @@ public class RemoteServ extends IService implements RZCallStateListener,
 		// notify
 		Bundle bundle = new Bundle();
 
-		bundle.putInt(RazemIntent.BUNDLE_LOGIN_TAG_RESULT,
-				LoginResult._RAZEM_LOGIN_RESULT_SUCCESS.ordinal());
-
 		bundle.putParcelable(RazemIntent.BUNDLE_LOGIN_TAG_INFOR, infor);
 
 		sendBroadcast(RazemIntent.ACTION_LOGIN_STATE_CHANGED, bundle);
@@ -102,8 +117,6 @@ public class RemoteServ extends IService implements RZCallStateListener,
 		// notify
 
 		Bundle bundle = new Bundle();
-
-		bundle.putInt(RazemIntent.BUNDLE_LOGIN_TAG_RESULT, login_ret);
 
 		sendBroadcast(RazemIntent.ACTION_LOGIN_STATE_CHANGED, bundle);
 
@@ -135,29 +148,51 @@ public class RemoteServ extends IService implements RZCallStateListener,
 	}
 
 	@Override
-	public void onMemberAcquired(int accountid, String id, String title,
-			int callstatus, byte[] icon) {
+	public void onMemberAcquired(int account, String nick, String title,
+			int call_status, byte[] icon) {
+		// printf("onMemberAcquired { %d , %s , %s , %d , %d } ", account, nick,
+		// title, call_status, icon.length);
 
+		Bundle bundle = new Bundle();
+
+		MemberInfor infor = new MemberInfor(account, nick, title, call_status,
+				icon);
+
+		bundle.putParcelable(RazemIntent.BUNDLE_MEMBER_INFOR, infor);
+
+		sendBroadcast(RazemIntent.ACTION_MEMBER_ACQUIRE, bundle);
 	}
 
 	@Override
 	public void onMemberOnlineStateChanged(int account_id, int online_offline) {
+		// printf("onMemberOnlineStateChanged { %d , %d }", account_id,
+		// online_offline);
 
-	}   
+		Bundle bundle = new Bundle();
+
+		bundle.putInt(RazemIntent.BUNDLE_MEMBER_ONLINE_ACCOUNT, account_id);
+		bundle.putInt(RazemIntent.BUNDLE_MEMBER_ONLINE_STATE, online_offline);
+
+		sendBroadcast(RazemIntent.ACTION_MEMBER_STATE_CHANGED, bundle);
+
+	}
 
 	@Override
 	public void onMemberChanged(int account_id, int changed_bits) {
+		// printf("onMemberChanged { %d , %d }", account_id, changed_bits);
 		SVConnect.getMemberInfo(account_id, changed_bits);
 	}
 
 	@Override
 	public void onCallIncomming(int targetid) {
-
+		Intent intent = new Intent();
 		Bundle bundle = new Bundle();
-
 		bundle.putInt(RazemIntent.BUNDLE_CALL_INCOMMING_TAG_TARGET, targetid);
+		intent.putExtras(bundle);
+		intent.setClass(getApplicationContext(), InCommingAct.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-		sendBroadcast(RazemIntent.ACTION_CALL_INCOMMING, bundle);
+		startActivity(intent);
 	}
 
 	@Override

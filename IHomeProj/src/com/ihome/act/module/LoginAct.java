@@ -1,8 +1,7 @@
 package com.ihome.act.module;
 
-import android.content.ComponentName;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.widget.TextView;
 
@@ -11,15 +10,12 @@ import com.ihome.act.RemoteActivity;
 import com.ihome.serv.IServManager;
 import com.ihome.serv.LoginInfor;
 import com.ihome.serv.RazemIntent;
-import com.ihome.serv.LoginManager.LoginResult;
 
 public class LoginAct extends RemoteActivity {
 
 	public final static String LOGIN_SERVER_ADDR = "115.28.246.43";
 	public final static int LOGIN_SERVER_ACCOUNT = 1000000;
 	public final static String LOGIN_SERVER_PASSWD = "1000";
-
-	private IServManager mServManager;
 
 	private TextView txt_show;
 
@@ -38,38 +34,42 @@ public class LoginAct extends RemoteActivity {
 	}
 
 	@Override
-	protected void onLoginRet(final LoginInfor infor, final LoginResult ret) {
-		super.onLoginRet(infor, ret);
-		printf("%s -  %s", infor, ret);
+	protected void onLoginRet(final LoginInfor infor) {
+		super.onLoginRet(infor);
 
-		runOnUiThread(new Runnable() { 
-
+		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				txt_show.setText(String.format("%s - %s", infor, ret));
+				txt_show.append(String.format("Result : %s - ",
+						infor != null ? "success" : "failed"));
 			}
 		});
-	}
 
-	@Override
-	public void onServiceConnected(ComponentName arg0, IBinder arg1) {
-		mServManager = IServManager.Stub.asInterface(arg1);
+		if (infor != null) {
+			Bundle bundle = new Bundle();
+			bundle.putInt(BUNDLE_LOGIN_INFOR_ACCOUNT, infor.account);
+			Intent intent = new Intent();
+			intent.setClass(this, MembersAct.class);
+			intent.putExtras(bundle);
+			startActivity(intent);
 
-		try {
-			mServManager.rzLogin(LOGIN_SERVER_ADDR, LOGIN_SERVER_ACCOUNT,
-					LOGIN_SERVER_PASSWD);
-
-			txt_show.setText(String.format(
-					"Start login - %s - %s - %s .....\n", LOGIN_SERVER_ADDR,
-					LOGIN_SERVER_ACCOUNT, LOGIN_SERVER_PASSWD));
-
-		} catch (RemoteException e) {
-			handleRemoteException(e);
+			finish();
 		}
 	}
 
 	@Override
-	public void onServiceDisconnected(ComponentName arg0) {
-		mServManager = null;
+	protected void onBindPrepared(IServManager serv) throws RemoteException {
+		serv.rzLogin(LOGIN_SERVER_ADDR, LOGIN_SERVER_ACCOUNT,
+				LOGIN_SERVER_PASSWD);
+
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				txt_show.setText(String.format(
+						"Start login - %s - %s - %s .....\n",
+						LOGIN_SERVER_ADDR, LOGIN_SERVER_ACCOUNT,
+						LOGIN_SERVER_PASSWD));
+			}
+		});
 	}
 }

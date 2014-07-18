@@ -21,8 +21,8 @@ public class LoginManager implements Callback {
 	private RequestLoginThread mRequestLoginThread;
 	private Handler mRequestLoginHandler;
 
-	private LoginState state_login; // ��ǰ��¼״̬
-	private LoginInfor retry_account; // �����˺�
+	private LoginState state_login;
+	private LoginInfor retry_account;
 	private boolean is_net_ok;
 
 	private final LoginCallback mLoginCallback;
@@ -37,6 +37,7 @@ public class LoginManager implements Callback {
 		state_login = LoginState.ONLINE;
 		// retry_account = new LoginInfor(infor.ip, infor.account, infor.pwd);
 		retry_account = infor;
+		retry_account.retrys = 0;
 
 		mLoginCallback.onLoginSuccess(infor);
 	}
@@ -60,13 +61,22 @@ public class LoginManager implements Callback {
 
 	private void request_retry() {
 
-		if (retry_account == null)
+		if (state_login == LoginState.ONLINE) {
+			printf("Give up relogin , Has online !!!");
 			return;
+		}
 
-		if (!is_net_ok)
+		if (retry_account == null) {
+			printf("Give up relogin , Has no retry account !!");
 			return;
-
+		}
+		if (!is_net_ok) {
+			printf("Give up relogin , Has no net !!!");
+			return;
+		}
 		if (retry_account.retrys > MAX_RETRYS) {
+			printf("Give up relogin , Retrys count > MAX_RETRYS(%d) !!!",
+					MAX_RETRYS);
 			retry_account.retrys = 0;
 			return;
 		}
@@ -75,8 +85,7 @@ public class LoginManager implements Callback {
 
 		final int delay_time = retry_account.getDelayRetry();
 
-		Log.e(getClass().getSimpleName(),
-				String.format("LoginRetry after %s ms!!!", delay_time));
+		printf("Retrying ! Will relogin after %s ms!!", delay_time);
 
 		mRequestLoginHandler.sendMessageDelayed(mRequestLoginHandler
 				.obtainMessage(MSG_LOGIN_ACCOUNT, retry_account), delay_time);
@@ -86,13 +95,17 @@ public class LoginManager implements Callback {
 		synchronized (this) {
 			is_net_ok = infor != null;
 
-			if (retry_account == null)
-				return;
-
 			if (is_net_ok)
-				request_retry(); 
-			else
-				retry_account.retrys = 0;
+				request_retry();
+			else {
+				if (mRequestLoginHandler.hasMessages(MSG_LOGIN_ACCOUNT)) {
+					printf("Remove retrying task by NO NET !!");
+					mRequestLoginHandler.removeMessages(MSG_LOGIN_ACCOUNT);
+				}
+
+				if (retry_account != null)
+					retry_account.retrys = 0;
+			}
 		}
 	}
 
@@ -103,7 +116,6 @@ public class LoginManager implements Callback {
 
 	public void shutdown() {
 		state_login = LoginState.OFFLINE;
-		retry_account = null;
 	}
 
 	public LoginInfor getLoginInfor() {
@@ -122,18 +134,24 @@ public class LoginManager implements Callback {
 	}
 
 	public void quit() {
-		if (mRequestLoginThread != null)
+		if (mRequestLoginThread != null)   
 			mRequestLoginThread.quit();
 	}
 
-	public int login(LoginInfor infor) {
+	public int login(LoginInfor infor) {   
 
-		if (state_login == LoginState.TRYING)
+		if (state_login == LoginState.TRYING   
+				|| state_login == LoginState.ONLINE) {
+			printf("Give up login , login_state : %s!!!", state_login);
 			return RESULT_RETRY;
-
-		if (mRequestLoginHandler.hasMessages(MSG_LOGIN_ACCOUNT))
+		} 
+		
+		retry_account = null;
+ 
+		if (mRequestLoginHandler.hasMessages(MSG_LOGIN_ACCOUNT)) {
+			printf("Remove retrying task by manual!!");
 			mRequestLoginHandler.removeMessages(MSG_LOGIN_ACCOUNT);
-
+		}
 		mRequestLoginHandler.sendMessage(mRequestLoginHandler.obtainMessage(
 				MSG_LOGIN_ACCOUNT, infor));
 
@@ -142,7 +160,16 @@ public class LoginManager implements Callback {
 
 	@Override
 	public boolean handleMessage(Message arg0) {
+
+		if (state_login == LoginState.ONLINE) {
+			printf("Give up login , Has online !!");
+			return false;
+		}
+
 		final LoginInfor infor = (LoginInfor) arg0.obj;
+
+		printf(">>>>>>> Login : %s", infor);
+
 		final int login_ret = request_login(infor);
 
 		if (login_ret < 0)
@@ -155,10 +182,12 @@ public class LoginManager implements Callback {
 
 		switch (event) {
 		case _RAZEM_LOGIN_RESULT_SUCCESS:
+			printf("Login Success !!!");
 			handleLoginSuccess(infor);
 			break;
 		default:
 			handleLoginFailed(infor, login_ret);
+			printf("Login Failed (%s) !!!", event);
 			break;
 		}
 		return true;
@@ -206,5 +235,9 @@ public class LoginManager implements Callback {
 			super.onLooperPrepared();
 			mRequestLoginHandler = new Handler(getLooper(), LoginManager.this);
 		}
+	}
+
+	void printf(String msg, Object... args) {
+		Log.e(getClass().getSimpleName(), String.format(msg, args));
 	}
 }

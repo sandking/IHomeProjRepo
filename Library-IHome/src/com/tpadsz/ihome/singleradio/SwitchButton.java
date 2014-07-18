@@ -23,7 +23,7 @@ import com.tpadsz.ihome.R;
 public class SwitchButton extends CheckBox {
     private Paint mPaint;
 
-    private ViewParent mParent;
+    private ViewParent mParent; 
 
     private Bitmap mBottom;
 

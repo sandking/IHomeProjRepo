@@ -70,7 +70,7 @@ public class IHomeApp extends Application implements CrashListener {
 			}
 		}.start();
 
-		return false;
+		return true;
 	}
 
 	@Override
@@ -83,11 +83,12 @@ public class IHomeApp extends Application implements CrashListener {
 
 	public void join(String name, BaseActivity activity) {
 		ihome_acts.put(name, activity);
-		printf(">>>>>>>>>>>> Application join %s <<<<<<<<<<<<<<", name);
+		printf(">>>>>>>>>>>> %s has join !!! <<<<<<<<<<<<<<", name);
 	}
 
 	public void exit(String name) {
 		ihome_acts.remove(name);
+		printf(">>>>>>>>>>>> %s has exit !!! <<<<<<<<<<<<<<", name);
 	}
 
 	protected void forceClose() {

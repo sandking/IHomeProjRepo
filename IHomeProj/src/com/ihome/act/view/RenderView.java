@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
@@ -21,17 +22,22 @@ public class RenderView extends SurfaceView implements Callback {
 	private boolean isCreated;
 	private final byte[] lock_preview = new byte[0];
 
+	@SuppressWarnings("deprecation")
 	public RenderView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
 		mHolder = getHolder();
 		mHolder.addCallback(this);
+		mHolder.setType(SurfaceHolder.SURFACE_TYPE_GPU);
 
 		mPaint = new Paint();
+		mPaint.setAntiAlias(true);
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
+		Log.e(getClass().getSimpleName(), "surfaceCreated!!!");
+
 		synchronized (lock_preview) {
 			isCreated = true;
 			frameRect = holder.getSurfaceFrame();
@@ -45,6 +51,7 @@ public class RenderView extends SurfaceView implements Callback {
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
+		Log.e(getClass().getSimpleName(), "surfaceDestroyed!!!");
 		synchronized (lock_preview) {
 			isCreated = false;
 		}
@@ -52,21 +59,25 @@ public class RenderView extends SurfaceView implements Callback {
 
 	public void render(Bitmap bmp, Rect rect) {
 		synchronized (lock_preview) {
-			if (!isCreated)
+			if (!isCreated) {
+				Log.e("", "Render View is not created!!!!");
+
 				return;
 
+			}
 			try {
-
 				mCanvas = mHolder.lockCanvas();
+
+				if (mCanvas == null) {
+					Log.e("", "Render canvas is null!!!!");
+				}
 
 				if (mCanvas != null)
 					render_view(mCanvas, bmp, rect);
-
 			} finally {
 				if (mCanvas != null)
 					mHolder.unlockCanvasAndPost(mCanvas);
 			}
-
 		}
 	}
 
