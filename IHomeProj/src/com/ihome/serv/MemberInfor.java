@@ -88,7 +88,6 @@ public class MemberInfor implements Parcelable {
 		dest.writeInt(call_state);
 		dest.writeInt(icon_length);
 		dest.writeByteArray(icon);
-
 	}
 
 	public static final Parcelable.Creator<MemberInfor> CREATOR = new Parcelable.Creator<MemberInfor>() {

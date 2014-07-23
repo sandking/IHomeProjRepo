@@ -129,25 +129,26 @@ public class LoginManager implements Callback {
 	public void exec() {
 		if (mRequestLoginThread == null)
 			mRequestLoginThread = new RequestLoginThread("Login-Thread");
-
+		
+		mRequestLoginThread.setDaemon(true);
 		mRequestLoginThread.start();
 	}
 
 	public void quit() {
-		if (mRequestLoginThread != null)   
+		if (mRequestLoginThread != null)
 			mRequestLoginThread.quit();
 	}
 
-	public int login(LoginInfor infor) {   
+	public int login(LoginInfor infor) {
 
-		if (state_login == LoginState.TRYING   
+		if (state_login == LoginState.TRYING
 				|| state_login == LoginState.ONLINE) {
 			printf("Give up login , login_state : %s!!!", state_login);
 			return RESULT_RETRY;
-		} 
-		
+		}
+
 		retry_account = null;
- 
+
 		if (mRequestLoginHandler.hasMessages(MSG_LOGIN_ACCOUNT)) {
 			printf("Remove retrying task by manual!!");
 			mRequestLoginHandler.removeMessages(MSG_LOGIN_ACCOUNT);

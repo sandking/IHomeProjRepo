@@ -1,5 +1,6 @@
 package com.ihome.act.module;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Rect;
@@ -19,7 +20,6 @@ import com.ihome.act.view.RenderView;
 import com.ihome.serv.IServManager;
 import com.ihome.serv.MemberInfor;
 import com.ihome.serv.RazemIntent;
-import com.tpad.ihome.inter.VPCalloutListener;
 import com.tpad.ihome.inter.VPConnect;
 import com.tpad.ihome.inter.VPConnectListener;
 import com.tpad.ihome.inter.VPDeInitCompleteListener;
@@ -112,20 +112,15 @@ public class CommunityAct extends RemoteActivity implements
 	}
 
 	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		printf("onNewIntent!!!");
+	}
+
+	@Override
 	protected void onDestroy() {
 		super.onDestroy();
 		unregister();
-
-		if (isFailed) {
-			printf("onDestory - call failed will deinit_vp directly!!!");
-
-			deinit_vp();
-		}
-		if (isConnected) {
-			printf("onDestory - call failed will end call!!!");
-
-			VPConnect.endCall();
-		}
 	}
 
 	private void init_vp(final int account) {
@@ -138,11 +133,11 @@ public class CommunityAct extends RemoteActivity implements
 			@Override
 			public void run() {
 				vpinit_flag = true;
-
 				VPConnect.init(CommunityAct.this, preview_bmp, preview_width,
 						preview_height, account);
 			}
 		};
+
 		new Thread(init_action, "VPConnect-Thread").start();
 	}
 
@@ -178,8 +173,8 @@ public class CommunityAct extends RemoteActivity implements
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			if (isFailed || isConnected)
-				finish();
+			if (isConnected)
+				VPConnect.endCall();
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);
@@ -205,7 +200,7 @@ public class CommunityAct extends RemoteActivity implements
 	protected void onCallFailed(int state) {
 		super.onCallFailed(state);
 		printf("onCallFailed { %d }", state);
-		isFailed = true;
+		deinit_vp();
 		finish();
 	}
 
@@ -248,11 +243,10 @@ public class CommunityAct extends RemoteActivity implements
 		init_audio_hardware();
 
 		if (TEST_CALL_OUT)
-
 			handler.postDelayed(new Runnable() {
 				@Override
 				public void run() {
-					finish();
+					VPConnect.endCall();
 				}
 			}, 100);
 	}
@@ -262,12 +256,12 @@ public class CommunityAct extends RemoteActivity implements
 		printf("onDisconnected!!!");
 		release_audio_hardware();
 		deinit_vp();
+		finish();
 	}
 
 	@Override
 	public void onDeInitCompleted() {
 		printf("onDeInitCompleted!!!");
-
 		if (preview_bmp != null && !preview_bmp.isRecycled())
 			preview_bmp.recycle();
 	}

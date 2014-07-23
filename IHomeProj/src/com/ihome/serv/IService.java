@@ -38,6 +38,7 @@ public abstract class IService extends Service {
 		mConnectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
     
 		foreground();
+		
 		register_netlistener();
 	}
 

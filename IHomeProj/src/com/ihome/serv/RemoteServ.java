@@ -38,6 +38,8 @@ public class RemoteServ extends IService implements RZCallStateListener,
 		}
 	};
 
+	private Thread init_thread;
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -47,7 +49,9 @@ public class RemoteServ extends IService implements RZCallStateListener,
 		mLoginManager = new LoginManager(this);
 		mLoginManager.exec();
 
-		new Thread(init_runn, "SVConnect-Thread").start();
+		init_thread = new Thread(init_runn, "SVConnect-Thread");
+		init_thread.setDaemon(true);
+		init_thread.start();
 	}
 
 	@SuppressLint("NewApi")
@@ -115,7 +119,6 @@ public class RemoteServ extends IService implements RZCallStateListener,
 	@Override
 	public boolean onLoginFailed(int login_ret) {
 		// notify
-
 		Bundle bundle = new Bundle();
 
 		sendBroadcast(RazemIntent.ACTION_LOGIN_STATE_CHANGED, bundle);
@@ -150,8 +153,6 @@ public class RemoteServ extends IService implements RZCallStateListener,
 	@Override
 	public void onMemberAcquired(int account, String nick, String title,
 			int call_status, byte[] icon) {
-		// printf("onMemberAcquired { %d , %s , %s , %d , %d } ", account, nick,
-		// title, call_status, icon.length);
 
 		Bundle bundle = new Bundle();
 
@@ -165,21 +166,19 @@ public class RemoteServ extends IService implements RZCallStateListener,
 
 	@Override
 	public void onMemberOnlineStateChanged(int account_id, int online_offline) {
-		// printf("onMemberOnlineStateChanged { %d , %d }", account_id,
-		// online_offline);
+
+		if (online_offline > 0) {
+			
+		}
 
 		Bundle bundle = new Bundle();
-
 		bundle.putInt(RazemIntent.BUNDLE_MEMBER_ONLINE_ACCOUNT, account_id);
 		bundle.putInt(RazemIntent.BUNDLE_MEMBER_ONLINE_STATE, online_offline);
-
 		sendBroadcast(RazemIntent.ACTION_MEMBER_STATE_CHANGED, bundle);
-
 	}
 
 	@Override
 	public void onMemberChanged(int account_id, int changed_bits) {
-		// printf("onMemberChanged { %d , %d }", account_id, changed_bits);
 		SVConnect.getMemberInfo(account_id, changed_bits);
 	}
 
@@ -232,8 +231,6 @@ public class RemoteServ extends IService implements RZCallStateListener,
 		@Override
 		public void rzLogin(String addr, int account, String passwd)
 				throws RemoteException {
-			super.rzLogin(addr, account, passwd);
-
 			mLoginManager.login(new LoginInfor(addr, account, passwd));
 		}
 
@@ -249,7 +246,6 @@ public class RemoteServ extends IService implements RZCallStateListener,
 
 		@Override
 		public void rzLogout() throws RemoteException {
-			super.rzLogout();
 			mLoginManager.logout();
 		}
 	}

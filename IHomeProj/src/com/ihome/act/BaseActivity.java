@@ -17,8 +17,10 @@ public class BaseActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		
 		_dbg_ = getResources().getBoolean(R.bool.act_debug);
 		printf("%s onCreate!!!", getClass().getSimpleName()); 
+		
 		super.onCreate(savedInstanceState);
 		ihomeApp = (IHomeApp) getApplication();
 		ihomeApp.join(this.getClass().getSimpleName(), this);

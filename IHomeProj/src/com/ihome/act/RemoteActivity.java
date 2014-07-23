@@ -29,7 +29,7 @@ public abstract class RemoteActivity extends BaseActivity implements
 
 	private BroadcastReceiver mReceiver;
 	
-	public final static boolean TEST_CALL_OUT = true;
+	public final static boolean TEST_CALL_OUT = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

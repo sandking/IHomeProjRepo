@@ -239,7 +239,7 @@ public class CrashHandler implements UncaughtExceptionHandler, TransportListener
 	{
 		mCrashListener.onCommit(true);
 	}
-
+ 
 	@Override
 	public void messageNotDelivered(TransportEvent arg0)
 	{

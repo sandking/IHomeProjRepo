@@ -15,11 +15,14 @@ public class AudioRecorder {
 	private int mRecordSize;
 
 	private AudioRecord mRecord;
-
+	
 	public AudioRecorder() {
+		
 		int min_size = AudioRecord
 				.getMinBufferSize(frequency, channel, sampbit);
+		
 		mRecordSize = min_size * 5;
+		
 		if (mRecordSize < 1024)
 			mRecordSize = 1024;
 		if (mRecordSize % 1024 != 0)

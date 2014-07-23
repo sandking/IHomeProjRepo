@@ -32,9 +32,17 @@ public class MembersAct extends RemoteActivity implements OnItemClickListener {
 	private List<MemberInfor> member_infos;
 	private MemberAdapter member_adapter;
 
-	private Handler handler = new Handler();
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			txt_show.append(msg.obj.toString());
+
+			if (member_adapter != null)
+				member_adapter.notifyDataSetChanged();
+		};
+	};
 
 	int account;
+	static int times;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +69,8 @@ public class MembersAct extends RemoteActivity implements OnItemClickListener {
 	protected void onResume() {
 		super.onResume();
 
-		if (TEST_CALL_OUT)
+		if (TEST_CALL_OUT) {
+			setTitle("times : " + times);
 			handler.postDelayed(new Runnable() {
 				@Override
 				public void run() {
@@ -71,9 +80,11 @@ public class MembersAct extends RemoteActivity implements OnItemClickListener {
 						return;
 					}
 					
+					times++;
 					goto_comm(infor);
 				}
 			}, 1000);
+		}
 	}
 
 	MemberInfor find(int id) {
@@ -82,6 +93,15 @@ public class MembersAct extends RemoteActivity implements OnItemClickListener {
 				return infor;
 
 		return null;
+	}
+
+	void update(MemberInfor infor) {
+		if (member_infos.contains(infor)) {
+			final int index = member_infos.indexOf(infor);
+			member_infos.remove(index);
+			member_infos.add(index, infor);
+		} else
+			member_infos.add(infor);
 	}
 
 	@Override
@@ -103,22 +123,15 @@ public class MembersAct extends RemoteActivity implements OnItemClickListener {
 		if (infor.getAccount() == this.account)
 			return;
 
-		if (!member_infos.contains(infor))
-			member_infos.add(infor);
+		update(infor);
 
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				txt_show.append(String.format(
-						"[%s] ACQ { %d , %s , %s , %d , %d } \n",
-						HelperUtils.obtainCurrTime("yyyy:MM:dd HH:mm:ss"),
-						infor.getAccount(), infor.getNick(), infor.getTitle(),
-						infor.getCall_state(), infor.getIcon().length));
+		final String append = String.format(
+				"[%s] ACQ { %d , %s , %s , %d , %d } \n",
+				HelperUtils.obtainCurrTime("yyyy:MM:dd HH:mm:ss"),
+				infor.getAccount(), infor.getNick(), infor.getTitle(),
+				infor.getCall_state(), infor.getIcon().length);
 
-				if (member_adapter != null)
-					member_adapter.notifyDataSetChanged();
-			}
-		});
+		handler.sendMessage(handler.obtainMessage(0, append));
 	}
 
 	@Override
@@ -126,21 +139,11 @@ public class MembersAct extends RemoteActivity implements OnItemClickListener {
 			final int online_state) {
 		super.onMemberOnlineStateChanged(account, online_state);
 
-		if (online_state == 0) {
+		final String append = String.format("[%s] STATE { %d , %d } \n",
+				HelperUtils.obtainCurrTime("yyyy:MM:dd HH:mm:ss"), account,
+				online_state);
 
-		}
-
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				txt_show.append(String.format("[%s] STATE { %d , %d } \n",
-						HelperUtils.obtainCurrTime("yyyy:MM:dd HH:mm:ss"),
-						account, online_state));
-
-				if (member_adapter != null)
-					member_adapter.notifyDataSetChanged();
-			}
-		});
+		handler.sendMessage(handler.obtainMessage(0, append));
 	}
 
 	@Override
@@ -159,6 +162,7 @@ public class MembersAct extends RemoteActivity implements OnItemClickListener {
 	}
 
 	void goto_comm(MemberInfor infor) {
+
 		final Intent intent = new Intent();
 		final Bundle bundle = new Bundle();
 		bundle.putInt(BUNDLE_TYPE_GOTO_COMMUNITY, TYPE_CALLOUT);
