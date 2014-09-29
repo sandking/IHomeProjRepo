@@ -1,4 +1,4 @@
-package com.tongcheng.android.vacation.widget;
+package com.tongcheng.android.myWidget;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -32,8 +32,8 @@ import android.widget.RelativeLayout;
 import com.tongcheng.android.R;
 import com.tongcheng.android.base.ImageLoadeCallback;
 import com.tongcheng.android.base.ImageLoader;
-import com.tongcheng.android.myWidget.MyInfiniteGallery;
 import com.tongcheng.android.scenery.sceneryUtils.ImageIndexUtil;
+import com.tongcheng.entity.common.BaseAdvertisementObject;
 import com.tongcheng.util.NoticeTools;
 import com.tongcheng.util.SystemConfig;
 import com.tongcheng.util.Tools;
@@ -56,7 +56,7 @@ public class AdvertisementView extends RelativeLayout implements
 
 	private int mAutoSwitchRate = DEFAULT_SWITCH_RATE;
 
-	private final ArrayList<AdvertisementObject> mDatas = new ArrayList<AdvertisementObject>();
+	private final ArrayList<BaseAdvertisementObject> mDatas = new ArrayList<BaseAdvertisementObject>();
 
 	private final Context mContext;
 	private LayoutInflater mInflater;
@@ -99,7 +99,7 @@ public class AdvertisementView extends RelativeLayout implements
 
 	// ----------------------
 	private ImageLoader mImageLoader;
-	private Timer mTimer = new Timer();
+	private Timer mTimer = null;
 	private TimerTask mTask = null;
 
 	@SuppressLint("HandlerLeak")
@@ -167,7 +167,7 @@ public class AdvertisementView extends RelativeLayout implements
 			long id) {
 		final int item_position = position % mDatas.size();
 
-		final AdvertisementObject data_obj = mDatas.get(item_position);
+		final BaseAdvertisementObject data_obj = mDatas.get(item_position);
 
 		boolean flag = false;
 
@@ -204,6 +204,15 @@ public class AdvertisementView extends RelativeLayout implements
 	}
 
 	/**
+	 * 设置监听器.
+	 * 
+	 * @param l
+	 */
+	public void setOnItemClickListener(OnItemClickListener l) {
+		this.mItemClickListener = l;
+	}
+
+	/**
 	 * 设置指示器的位置.
 	 * 
 	 * @param location
@@ -228,7 +237,7 @@ public class AdvertisementView extends RelativeLayout implements
 	 * @param datas
 	 */
 	public void setAdvertisementData(
-			ArrayList<? extends AdvertisementObject> datas) {
+			ArrayList<? extends BaseAdvertisementObject> datas) {
 		setAdvertisementData(datas, true);
 	}
 
@@ -240,7 +249,8 @@ public class AdvertisementView extends RelativeLayout implements
 	 *            填充前是否清除之前的数据.
 	 */
 	public void setAdvertisementData(
-			ArrayList<? extends AdvertisementObject> datas, boolean clearFirst) {
+			ArrayList<? extends BaseAdvertisementObject> datas,
+			boolean clearFirst) {
 		if (datas == null) {
 			return;
 		}
@@ -253,7 +263,9 @@ public class AdvertisementView extends RelativeLayout implements
 
 		set();
 
-		resetIndicater();
+		// resetIndicater();
+
+		play();
 
 		mDefaultAdapter.notifyDataSetChanged();
 	}
@@ -328,6 +340,8 @@ public class AdvertisementView extends RelativeLayout implements
 		}
 
 		flag_start = true;
+
+		mTimer = new Timer();
 
 		mTask = new TimerTask() {
 			@Override
@@ -436,6 +450,7 @@ public class AdvertisementView extends RelativeLayout implements
 				mContext.getApplicationContext());
 		mAdIndicater = new ImageIndexUtil(mContext.getApplicationContext());
 
+		mAdIndicaterContainer.addView(mAdIndicater);
 	}
 
 	/**
@@ -449,9 +464,19 @@ public class AdvertisementView extends RelativeLayout implements
 
 		// set self values.
 		ViewGroup.LayoutParams rl_param = getLayoutParams();
-		rl_param.width = w;
-		rl_param.height = h;
+
+		if (rl_param == null) {
+			rl_param = new LayoutParams(w, h);
+		} else {
+			rl_param.width = w;
+			rl_param.height = h;
+		}
 		setLayoutParams(rl_param);
+
+		// remove views
+		if (getChildCount() > 0) {
+			removeAllViews();
+		}
 
 		// set & add ad_content.
 		addView(mAdContent, adContentParam);
@@ -464,9 +489,7 @@ public class AdvertisementView extends RelativeLayout implements
 		adIndicaterContainerParam.topMargin = mIndicaterMargin;
 
 		mAdIndicaterContainer.setBackgroundColor(Color.RED);
-
 		addView(mAdIndicaterContainer, adIndicaterContainerParam);
-		mAdIndicaterContainer.addView(mAdIndicater);
 
 		mAdContent.setGalleryCount(ad_count);
 		mAdIndicater.setTotal(ad_count);
@@ -494,7 +517,7 @@ public class AdvertisementView extends RelativeLayout implements
 		 * @return 是否消费完成，消费完成则不继续旧代码逻辑.
 		 */
 		boolean onItemClick(AdapterView<?> parent, View view, int position,
-				long id, AdvertisementObject obj);
+				long id, BaseAdvertisementObject obj);
 	}
 
 	private static class ViewHolder {
@@ -507,12 +530,13 @@ public class AdvertisementView extends RelativeLayout implements
 
 		private ViewHolder mHolder;
 
-		public DefaultAdvertisementAdapter(ArrayList<AdvertisementObject> datas) {
+		public DefaultAdvertisementAdapter(
+				ArrayList<BaseAdvertisementObject> datas) {
 			super(datas);
 		}
 
 		@Override
-		public View getView(AdvertisementObject data, View convertView,
+		public View getView(BaseAdvertisementObject data, View convertView,
 				ViewGroup parent) {
 			if (convertView == null) {
 				convertView = mInflater.inflate(
@@ -548,9 +572,9 @@ public class AdvertisementView extends RelativeLayout implements
 	 * @date 2014-9-25
 	 */
 	public static abstract class AdvertisementAdapter extends BaseAdapter {
-		private ArrayList<AdvertisementObject> datas;
+		private ArrayList<BaseAdvertisementObject> datas;
 
-		public AdvertisementAdapter(ArrayList<AdvertisementObject> datas) {
+		public AdvertisementAdapter(ArrayList<BaseAdvertisementObject> datas) {
 			this.datas = datas;
 		}
 
@@ -577,7 +601,7 @@ public class AdvertisementView extends RelativeLayout implements
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			final int item_position = position % getDataSize();
-			final AdvertisementObject data = (AdvertisementObject) getItem(item_position);
+			final BaseAdvertisementObject data = (BaseAdvertisementObject) getItem(item_position);
 			return getView(data, convertView, parent);
 		}
 
@@ -589,7 +613,7 @@ public class AdvertisementView extends RelativeLayout implements
 		 * @param parent
 		 * @return
 		 */
-		public abstract View getView(AdvertisementObject data,
+		public abstract View getView(BaseAdvertisementObject data,
 				View convertView, ViewGroup parent);
 	}
 }
